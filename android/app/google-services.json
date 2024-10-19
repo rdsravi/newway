@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1071082520202",
+    "project_id": "newway-66b27",
+    "storage_bucket": "newway-66b27.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1071082520202:android:5a0e22498d8b9eee57f773",
+        "android_client_info": {
+          "package_name": "com.rds.newway"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCms-Wj9Any6r0ud9W0ZZtwNxL4SHjXzgA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
