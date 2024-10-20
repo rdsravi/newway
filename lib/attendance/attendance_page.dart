@@ -7,7 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:path_provider/path_provider.dart'; // For saving files
 import 'package:path/path.dart';
 import 'package:geocoding/geocoding.dart'; // Import the geocoding package
-import '../calender_page.dart';
+import '../calendar_page.dart';
 import 'camera_helper.dart';
 
 class AttendancePage extends StatefulWidget {
@@ -304,7 +304,7 @@ class _AttendancePageState extends State<AttendancePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CalenderPage(attendanceList: attendanceList), // Pass the attendance list
+                      builder: (context) => CalendarPage(attendanceList: attendanceList), // Pass the attendance list
                     ),
                   );
                 },

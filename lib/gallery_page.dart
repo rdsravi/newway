@@ -1,88 +1,93 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 class GalleryPage extends StatefulWidget {
-  final List<String> imagePaths;
-
-  const GalleryPage({Key? key, required this.imagePaths}) : super(key: key);
-
   @override
   _GalleryPageState createState() => _GalleryPageState();
 }
 
 class _GalleryPageState extends State<GalleryPage> {
-  late List<String> _imagePaths;
+  List<File> _images = [];
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
-    _imagePaths = widget.imagePaths; // Use the passed imagePaths
+    _loadImages();
   }
 
-  Future<void> _deleteImage(int index) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+  // Load images from the app's document directory
+  Future<void> _loadImages() async {
+    final Directory directory = await getApplicationDocumentsDirectory();
+    final List<FileSystemEntity> files = directory.listSync();
+
+    // Filter to only include PNG files
+    List<File> capturedImages = files
+        .whereType<File>()
+        .where((file) => file.path.endsWith('.png'))
+        .toList();
+
     setState(() {
-      File(_imagePaths[index]).deleteSync(); // Delete the file
-      _imagePaths.removeAt(index); // Remove the path from the list
+      _images = capturedImages;
     });
-    await prefs.setStringList('imagePaths', _imagePaths); // Update preferences
   }
 
-  Future<void> _confirmDelete(int index) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Delete Image'),
-          content: const Text('Are you sure you want to delete this image?'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-            ),
-            TextButton(
-              child: const Text('Delete'),
-              onPressed: () {
-                _deleteImage(index); // Delete the image
-                Navigator.of(context).pop(); // Close the dialog
-              },
-            ),
-          ],
-        );
-      },
-    );
+  // Function to capture image using camera
+  Future<void> _captureImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+
+    if (image != null) {
+      final Directory directory = await getApplicationDocumentsDirectory();
+      final String path = '${directory.path}/${DateTime.now().millisecondsSinceEpoch}.png';
+      await File(image.path).copy(path); // Use await for copying
+      _loadImages(); // Reload images to include the newly captured image
+    }
   }
 
+  // Function to pick an image from the gallery (not used for capturing images)
+  Future<void> _pickImage() async {
+    // Optionally, implement picking images from the gallery if required
+  }
+
+  // Build the gallery UI
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Gallery')),
-      body: _imagePaths.isEmpty
-          ? Center(child: Text('No images taken yet.'))
+      appBar: AppBar(
+        title: Text('Gallery'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.camera_alt),
+            onPressed: _captureImage,
+          ),
+        ],
+      ),
+      body: _images.isEmpty
+          ? Center(child: CircularProgressIndicator())
           : GridView.builder(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          crossAxisSpacing: 4.0,
-          mainAxisSpacing: 4.0,
+          crossAxisCount: 3, // Number of images in each row
+          childAspectRatio: 1.0, // Aspect ratio for the images
         ),
-        itemCount: _imagePaths.length,
+        itemCount: _images.length,
         itemBuilder: (context, index) {
           return GestureDetector(
             onTap: () {
-              Navigator.of(context).push(
+              Navigator.push(
+                context,
                 MaterialPageRoute(
-                  builder: (context) => DisplayPictureScreen(imagePath: _imagePaths[index]),
+                  builder: (context) => DisplayPictureScreen(imagePath: _images[index].path),
                 ),
               );
             },
-            onLongPress: () => _confirmDelete(index), // Confirm before deletion
-            child: Image.file(
-              File(_imagePaths[index]),
-              fit: BoxFit.cover,
+            child: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Image.file(
+                _images[index],
+                fit: BoxFit.cover,
+              ),
             ),
           );
         },

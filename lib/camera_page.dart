@@ -3,16 +3,15 @@ import 'dart:typed_data';
 import 'dart:ui';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:flutter/rendering.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:cross_file/cross_file.dart';
-
 import 'gallery_page.dart';
+import 'package:cross_file/cross_file.dart';
+import 'package:share_plus/share_plus.dart';
 
 class CameraPage extends StatefulWidget {
   @override
@@ -110,27 +109,34 @@ class _CameraPageState extends State<CameraPage> {
     }
   }
 
-  Future<String> _saveImageWithOverlay(String imagePath) async {
+  Future<void> _saveImageWithOverlay() async {
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      String newPath = path.join(directory.path, '${DateTime.now().millisecondsSinceEpoch}.png');
-
+      // Capture image with overlay
       RenderRepaintBoundary boundary = _imageKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
       var image = await boundary.toImage(pixelRatio: 3.0);
       Uint8List? byteData = (await image.toByteData(format: ImageByteFormat.png))?.buffer.asUint8List();
       if (byteData != null) {
+        // Save image locally
+        final directory = await getApplicationDocumentsDirectory();
+        String newPath = path.join(directory.path, '${DateTime.now().millisecondsSinceEpoch}.png');
         File(newPath).writeAsBytesSync(byteData);
+
+        await _saveImagePath(newPath); // Save the image path to SharedPreferences
+        setState(() {
+          _lastCapturedImagePath = newPath;
+        });
+
+        // Navigate to the display screen with the captured image
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => DisplayPictureScreen(imagePath: newPath),
+          ),
+        );
+
+        print("Image saved successfully to device!");
       }
-
-      await _saveImagePath(newPath);
-      setState(() {
-        _lastCapturedImagePath = newPath;
-      });
-
-      return newPath;
     } catch (e) {
       print("Error saving image: $e");
-      return '';
     }
   }
 
@@ -148,93 +154,79 @@ class _CameraPageState extends State<CameraPage> {
         future: _initializeControllerFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            return RepaintBoundary(
-              key: _imageKey,
-              child: Stack(
-                children: [
-                  CameraPreview(_controller),
-                  Positioned(
-                    left: 10,
-                    top: 10,
-                    child: Text(
-                      DateTime.now().toString(),
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.white,
-                        backgroundColor: Colors.black,
+            return Stack(
+              children: [
+                RepaintBoundary(
+                  key: _imageKey,
+                  child: Stack(
+                    children: [
+                      CameraPreview(_controller),
+                      Positioned(
+                        left: 10,
+                        top: 10,
+                        child: Text(
+                          DateTime.now().toString(),
+                          style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.white,
+                            backgroundColor: Colors.black,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 10,
-                    top: 40,
-                    child: Text(
-                      _locationMessage,
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                        backgroundColor: Colors.black,
+                      Positioned(
+                        left: 10,
+                        top: 40,
+                        child: Text(
+                          _locationMessage,
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                            backgroundColor: Colors.black,
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                  Positioned(
-                    bottom: 20,
-                    left: 0,
-                    right: 0,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.photo, size: 40, color: Colors.white),
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => GalleryPage(imagePaths: _imagePaths),
-                              ),
-                            );
-                          },
-                        ),
-                        SizedBox(width: 40),
-
-                        FloatingActionButton(
-                          onPressed: () async {
-                            try {
-                              await _initializeControllerFuture;
-                              final image = await _controller.takePicture();
-                              String savedImagePath = await _saveImageWithOverlay(image.path);
-
-                              if (savedImagePath.isNotEmpty) {
-                                if (!mounted) return;
-                                await Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => DisplayPictureScreen(imagePath: savedImagePath),
-                                  ),
-                                );
-                              }
-                            } catch (e) {
-                              print(e);
-                            }
-                          },
-                          child: const Icon(Icons.camera_alt),
-                        ),
-
-                        SizedBox(width: 40),
-
-                        IconButton(
-                          icon: Icon(Icons.share, size: 40, color: Colors.white),
-                          onPressed: () {
-                            if (_lastCapturedImagePath != null) {
-                              Share.shareXFiles([XFile(_lastCapturedImagePath!)]);
-                            } else {
-                              print("No image to share");
-                            }
-                          },
-                        ),
-                      ],
-                    ),
+                ),
+                Positioned(
+                  bottom: 20,
+                  left: 0,
+                  right: 0,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.photo, size: 40, color: Colors.white),
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => GalleryPage(),
+                            ),
+                          );
+                        },
+                      ),
+                      SizedBox(width: 40),
+                      FloatingActionButton(
+                        onPressed: () async {
+                          await _saveImageWithOverlay();
+                        },
+                        child: const Icon(Icons.camera_alt),
+                      ),
+                      SizedBox(width: 40),
+                      IconButton(
+                        icon: Icon(Icons.share, size: 40, color: Colors.white),
+                        onPressed: () {
+                          if (_lastCapturedImagePath != null) {
+                            Share.shareXFiles([XFile(_lastCapturedImagePath!)]);
+                          } else {
+                            print("No image to share");
+                          }
+                        },
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             );
           } else {
             return const Center(child: CircularProgressIndicator());
@@ -253,7 +245,7 @@ class DisplayPictureScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Display Picture')),
+      appBar: AppBar(title: const Text('Captured Image')),
       body: Center(
         child: Image.file(File(imagePath)),
       ),

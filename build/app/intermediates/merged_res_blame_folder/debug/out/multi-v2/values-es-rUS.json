@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.rds.newway.app-mergeDebugResources-44:/values-es-rUS/values-es-rUS.xml",
+            "outputFile": "com.rds.newway.app-mergeDebugResources-45:/values-es-rUS/values-es-rUS.xml",
             "map": [
                 {
                     "source": "/home/rds/.gradle/caches/transforms-3/3c50a76fb6980fabc8ac55022ed6423c/transformed/appcompat-1.6.1/res/values-es-rUS/values-es-rUS.xml",
