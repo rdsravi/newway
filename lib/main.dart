@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:newway/camera_page.dart';
 import 'package:newway/gallery_page.dart';
 import 'package:newway/home_page.dart';
-import 'package:newway/profile_page.dart';
+import 'package:newway/profile/profile_page.dart';
 import 'package:newway/calendar_page.dart'; // Ensure this is the correct path
 import 'package:newway/splash_screen.dart';
 import 'package:newway/login_page.dart';
@@ -25,6 +25,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'New Way App',
       theme: ThemeData(
         primarySwatch: Colors.blue,

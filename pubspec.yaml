@@ -47,6 +47,7 @@ flutter:
   assets:
     - assets/fonts/Arial.ttf
     - assets/images/        # Include all images in this directory
+    - assets/images/avatar.png
   # Add specific images if needed
 
 

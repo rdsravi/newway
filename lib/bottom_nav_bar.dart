@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:newway/profile_page.dart';
+import 'package:newway/profile/profile_page.dart';
 
 import 'attendance/attendance_page.dart';
 import 'home_page.dart';
