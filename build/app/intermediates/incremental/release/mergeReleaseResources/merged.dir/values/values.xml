@@ -302,6 +302,7 @@
     <item name="amu_text" type="id"/>
     <item name="androidx_window_activity_scope" type="id"/>
     <item name="fragment_container_view_tag" type="id"/>
+    <item name="glide_custom_view_target_tag" type="id"/>
     <item name="home" type="id"/>
     <item name="line1" type="id"/>
     <item name="line3" type="id"/>

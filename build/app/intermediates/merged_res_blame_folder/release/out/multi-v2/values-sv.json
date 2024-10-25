@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.rds.newway.app-mergeReleaseResources-44:/values-sv/values-sv.xml",
+            "outputFile": "com.rds.newway.app-mergeReleaseResources-45:/values-sv/values-sv.xml",
             "map": [
                 {
                     "source": "/home/rds/.gradle/caches/transforms-3/c0acdb96f3544722b4ad61ef1c790068/transformed/jetified-play-services-basement-18.3.0/res/values-sv/values.xml",

@@ -117,7 +117,7 @@ class LoginPage extends StatelessWidget {
                     child: Text(
                       'Sign Up',
                       style: TextStyle(
-                        color: Colors.deepPurple,
+                        color: Colors.green,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

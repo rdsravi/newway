@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.rds.newway.app-mergeReleaseResources-44:/values-ka/values-ka.xml",
+            "outputFile": "com.rds.newway.app-mergeReleaseResources-45:/values-ka/values-ka.xml",
             "map": [
                 {
                     "source": "/home/rds/.gradle/caches/transforms-3/9bfd83b5bb61fe28df54e854a42d24c6/transformed/jetified-credentials-1.2.0-rc01/res/values-ka/values-ka.xml",

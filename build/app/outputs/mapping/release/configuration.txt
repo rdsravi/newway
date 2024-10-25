@@ -270,6 +270,23 @@
 }
 
 # End of content from /home/rds/.gradle/caches/transforms-3/3c50a76fb6980fabc8ac55022ed6423c/transformed/appcompat-1.6.1/proguard.txt
+# The proguard configuration file for the following section is /home/rds/.gradle/caches/transforms-3/dd9731c0b58403741c3acd8b0d0952eb/transformed/jetified-glide-4.15.1/proguard.txt
+-keep public class * implements com.bumptech.glide.module.GlideModule
+-keep class * extends com.bumptech.glide.module.AppGlideModule {
+ <init>(...);
+}
+-keep public enum com.bumptech.glide.load.ImageHeaderParser$** {
+  **[] $VALUES;
+  public *;
+}
+-keep class com.bumptech.glide.load.data.ParcelFileDescriptorRewinder$InternalRewinder {
+  *** rewind();
+}
+
+# Uncomment for DexGuard only
+#-keepresourcexmlelements manifest/application/meta-data@value=GlideModule
+
+# End of content from /home/rds/.gradle/caches/transforms-3/dd9731c0b58403741c3acd8b0d0952eb/transformed/jetified-glide-4.15.1/proguard.txt
 # The proguard configuration file for the following section is /home/rds/.gradle/caches/transforms-3/2ebd5dcfad109f058c8f3ec8df34d5f7/transformed/jetified-firebase-auth-23.0.0/proguard.txt
 -dontwarn com.google.appengine.api.**
 -dontwarn okio.**

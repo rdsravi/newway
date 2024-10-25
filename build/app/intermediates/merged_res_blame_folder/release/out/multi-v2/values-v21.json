@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.rds.newway.app-mergeReleaseResources-44:/values-v21/values-v21.xml",
+            "outputFile": "com.rds.newway.app-mergeReleaseResources-45:/values-v21/values-v21.xml",
             "map": [
                 {
                     "source": "/home/rds/.gradle/caches/transforms-3/531a61069660168a13ef2424b2761d8b/transformed/jetified-credentials-play-services-auth-1.2.0-rc01/res/values-v21/values-v21.xml",

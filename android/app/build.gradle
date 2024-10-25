@@ -32,8 +32,8 @@ android {
         applicationId = "com.rds.newway"
         minSdk = 24 // Adjust as needed
         targetSdk = 34 // Update to SDK version 34
-        versionCode = 1 // Update as needed
-        versionName = "1.0" // Update as needed
+        versionCode =3  // Update as needed
+        versionName = "1.0.1" // Update as needed
     }
 
 
