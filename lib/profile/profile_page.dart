@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Import for SystemNavigator
+import 'package:get/get.dart';
+import 'package:newway/controllers/profile_controller.dart';
 
 class ProfilePage extends StatelessWidget {
-  // Sample user data
-  final String profilePictureUrl =
-      'https://example.com/profile_picture.png'; // Replace with the actual URL
-  final String name = 'John Doe';
-  final String mobileNumber = '123-456-7890';
-  final String email = 'john.doe@example.com';
-  final String gender = 'Male';
-  final bool notificationsEnabled = true;
+  final ProfileController profileController = Get.put(ProfileController());
 
   @override
   Widget build(BuildContext context) {
@@ -30,73 +24,88 @@ class ProfilePage extends StatelessWidget {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Profile Picture
-            Center(
-              child: CircleAvatar(
-                radius: 60,
-                backgroundImage: profilePictureUrl.isNotEmpty
-                    ? NetworkImage(profilePictureUrl)
-                    : AssetImage('assets/images/avatar.png') as ImageProvider, // Use asset image if URL is empty
-              ),
-            ),
-            SizedBox(height: 16),
-            // User Details Header
-            Text(
-              'User Details',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            SizedBox(height: 10),
-            Divider(thickness: 2),
-            SizedBox(height: 10),
-            // User Info
-            _buildUserInfo('Name', name),
-            _buildUserInfo('Mobile No', mobileNumber),
-            _buildUserInfo('Email', email),
-            _buildUserInfo('Gender', gender),
-            SizedBox(height: 20),
-            // Notifications Switch
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Notifications',
-                  style: TextStyle(fontSize: 16),
+      body: Obx(() {
+        if (profileController.isLoading.value) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        final user = profileController.user.value;
+        if (user == null) {
+          return Center(child: Text('User data not found.'));
+        }
+
+        // Handle nullable fields properly using ?. operator
+        String profilePictureUrl = user.profilePictureUrl ?? 'assets/images/avatar.png';
+        String name = user.name ?? '';
+        String mobileNumber = user.mobileNumber ?? 'N/A';
+        String email = user.email ?? 'N/A';
+        String gender = user.gender ?? 'N/A';
+        bool notificationsEnabled = user.notificationsEnabled ?? false;
+
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: CircleAvatar(
+                  radius: 60,
+                  backgroundImage: profilePictureUrl.isNotEmpty
+                      ? NetworkImage(profilePictureUrl)
+                      : AssetImage('assets/images/avatar.png') as ImageProvider,
                 ),
-                Switch(
-                  value: notificationsEnabled,
-                  onChanged: (value) {
-                    // Handle notification toggle
+              ),
+              SizedBox(height: 16),
+              Text(
+                'User Details',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              SizedBox(height: 10),
+              Divider(thickness: 2),
+              SizedBox(height: 10),
+              _buildUserInfo('Name', name),
+              _buildUserInfo('Mobile No', mobileNumber),
+              _buildUserInfo('Email', email),
+              _buildUserInfo('Gender', gender),
+              // _buildUserInfo('Address', user.address ?? 'N/A'),
+              // _buildUserInfo('Date of Birth', user.dob ?? 'N/A'),
+              // Add more fields as needed
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Notifications', style: TextStyle(fontSize: 16)),
+                  Switch(
+                    value: notificationsEnabled,
+                    onChanged: (value) {
+                      profileController.updateNotifications(value);
+                    },
+                  ),
+                ],
+              ),
+              SizedBox(height: 32),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    profileController.logout(context);
                   },
-                ),
-              ],
-            ),
-            SizedBox(height: 32),
-            // Logout Button
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  _showLogoutDialog(context);
-                },
-                child: Text('Logout'),
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.red,
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                  child: Text('Logout'),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.red,
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
+        );
+
+      }),
     );
   }
 
@@ -118,44 +127,6 @@ class ProfilePage extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  // Show logout confirmation dialog
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Logout'),
-          content: Text('Are you sure you want to logout?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                // Clear user session (e.g., shared preferences)
-                // Example: await SharedPreferences.getInstance().then((prefs) => prefs.clear());
-
-                Navigator.of(context).pop(); // Close the dialog
-                _logout(); // Perform the logout action
-              },
-              child: Text('Logout'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // Logout method
-  void _logout() {
-    // Implement logout logic here
-    // e.g., clear user session and close the app
-    SystemNavigator.pop(); // Close the app
   }
 }
 

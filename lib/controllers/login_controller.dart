@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LoginController extends GetxController {
   // State variables
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  var isLoading = false.obs; // observable for loading state
-  var errorMessage = ''.obs; // observable for error message
-  var isPasswordVisible = false.obs; // observable for password visibility
+  var isLoading = false.obs; // Observable for loading state
+  var errorMessage = ''.obs; // Observable for error message
+  var isPasswordVisible = false.obs; // Observable for password visibility
+  var userData = {}.obs; // Observable for user data
 
-  // Firebase Auth instance
+  // Firebase Auth and Firestore instances
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Regex for email validation
   final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
@@ -26,21 +29,21 @@ class LoginController extends GetxController {
 
     // Check for empty fields
     if (email.isEmpty || password.isEmpty) {
-      showAlert("Please fill out all fields");
+      _showAlert("Please fill out all fields");
       isLoading.value = false; // Stop loading
       return;
     }
 
     // Validate email format
     if (!emailRegex.hasMatch(email)) {
-      showAlert("Please enter a valid email address");
+      _showAlert("Please enter a valid email address");
       isLoading.value = false; // Stop loading
       return;
     }
 
     // Check if password is at least 6 characters
     if (password.length < 6) {
-      showAlert("Password must be at least 6 characters long");
+      _showAlert("Password must be at least 6 characters long");
       isLoading.value = false; // Stop loading
       return;
     }
@@ -48,14 +51,41 @@ class LoginController extends GetxController {
     // Proceed with login if all validations pass
     try {
       // Sign in with Firebase
-      await _auth.signInWithEmailAndPassword(
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      Get.offAllNamed('/home'); // Navigate to home on success
+
+      // Fetch user data from Firestore
+      User? user = userCredential.user;
+      if (user != null) {
+        DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
+
+        if (userDoc.exists) {
+          // Store user data in observable
+          userData.value = userDoc.data() as Map<String, dynamic>;
+
+          // Navigate to the home page
+          Get.offAllNamed('/home');
+        } else {
+          // Create new user data if not found
+          await _firestore.collection('users').doc(user.uid).set({
+            'email': user.email,
+            'createdAt': Timestamp.now(),
+            'name': '', // Add default fields
+            'phone': '',
+          });
+
+          // Fetch the newly created data
+          DocumentSnapshot newUserDoc = await _firestore.collection('users').doc(user.uid).get();
+          userData.value = newUserDoc.data() as Map<String, dynamic>;
+
+          Get.offAllNamed('/home');
+        }
+      }
     } on FirebaseAuthException catch (e) {
-      errorMessage.value = e.message ?? "Login failed"; // Handle Firebase errors
-      showAlert(errorMessage.value);
+      errorMessage.value = e.message ?? "Login failed. Please try again.";
+      _showAlert(errorMessage.value);
     } finally {
       isLoading.value = false; // Stop loading
     }
@@ -67,7 +97,7 @@ class LoginController extends GetxController {
   }
 
   // Function to show alert messages
-  void showAlert(String message) {
+  void _showAlert(String message) {
     Get.snackbar(
       "Error",
       message,
